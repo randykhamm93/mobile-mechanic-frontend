@@ -1,68 +1,65 @@
-  // src/components/Login.js
+// src/components/Login.js
 import React, { useState } from 'react';
+import { login } from '../managers/AuthManager'; // Import the login function
+import { Link } from 'react-router-dom'; // Import Link
 
 const Login = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setError('');
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
 
-        try {
-            const response = await fetch('http://localhost:8000/api/token/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password }),
-            });
+    const result = await login(username, password); // Use the login function
 
-            if (!response.ok) {
-                throw new Error('Invalid username or password');
-            }
+    if (result.success) {
+      setSuccess(result.message);
+      // Redirect to the home page or elsewhere
+      window.location.href = '/'; // Example redirect to Home
+    } else {
+      setError(result.message);
+    }
+  };
 
-            const data = await response.json();
-
-            // Save the tokens in localStorage
-            localStorage.setItem('accessToken', data.access);
-            localStorage.setItem('refreshToken', data.refresh);
-
-            // Redirect or update UI after login
-            window.location.href = '/'; // Example redirect to Home
-        } catch (error) {
-            setError('Invalid username or password');
-        }
-    };
-
-    return (
+  return (
+    <div>
+      <h2>Login</h2>
+      <form onSubmit={handleLogin}>
         <div>
-            <h1>Login</h1>
-            <form onSubmit={handleLogin}>
-                <div>
-                    <label>Username:</label>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Password:</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-                <button type="submit">Login</button>
-            </form>
+          <label>Username:</label>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
         </div>
-    );
+        <div>
+          <label>Password:</label>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit">Login</button>
+      </form>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {success && <p style={{ color: 'green' }}>{success}</p>}
+
+      {/* Register Link */}
+      <p>
+        Don't have an account? <Link to="/register">Register here</Link>
+      </p>
+    </div>
+  );
 };
 
 export default Login;
